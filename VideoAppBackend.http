@@ -1,0 +1,6 @@
+@VideoAppBackend_HostAddress = http://localhost:5222
+
+GET {{VideoAppBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
