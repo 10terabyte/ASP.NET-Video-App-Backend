@@ -4,6 +4,7 @@ using VideoAppBackend.Data;
 using VideoAppBackend.Models;
 using System.Drawing;
 using FFMpegCore;
+using System.Diagnostics;
 namespace VideoAppBackend.Controllers
 {
     [Route("api/videos")]
@@ -28,10 +29,12 @@ namespace VideoAppBackend.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest(new { message = "No file uploaded" });
 
-            var approvedExtensions = new[] { ".mp4", ".avi", ".mov" };
+            var approvedMimeTypes = new[] { "video/mp4", "video/avi", "video/mov", "video/x-msvideo", "video/quicktime" };
+
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!approvedExtensions.Contains(fileExtension))
+            if (!approvedMimeTypes.Contains(file.ContentType))
             {
+                Debug.WriteLine(file.ContentType);
                 return BadRequest(new { message = "Invalid file type. Only MP4, AVI, and MOV files are allowed." });
             }
 
@@ -50,7 +53,28 @@ namespace VideoAppBackend.Controllers
             {
                 await file.CopyToAsync(stream);
             }
+            string mp4FilePath = filePath;
+            if (file.ContentType != "video/mp4")
+            {
+                mp4FilePath = Path.Combine(uploadsDirectory, $"{Path.GetFileNameWithoutExtension(uniqueFileName)}.mp4");
+                try
+                {
+                    FFMpegCore.FFMpegArguments
+                        .FromFileInput(filePath)
+                        .OutputToFile(mp4FilePath, overwrite: true, options => options
+                            .WithVideoCodec("libx264")
+                            .WithConstantRateFactor(21)
+                            .WithAudioCodec("aac")
+                            .WithFastStart())
+                        .ProcessSynchronously();
 
+                    System.IO.File.Delete(filePath);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(new { message = "File conversion failed", error = ex.Message });
+                }
+            }
             var thumbnailsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Thumbnails");
             if (!Directory.Exists(thumbnailsDirectory))
             {
@@ -62,7 +86,7 @@ namespace VideoAppBackend.Controllers
 
             try
             {
-                FFMpeg.Snapshot(filePath, thumbnailPath, new Size(256, 256), TimeSpan.FromSeconds(1));
+                FFMpeg.Snapshot(mp4FilePath, thumbnailPath, new Size(256, 256), TimeSpan.FromSeconds(1));
             }
             catch (Exception ex)
             {
@@ -74,7 +98,7 @@ namespace VideoAppBackend.Controllers
                 Title = title,
                 Description = description,
                 Categories = categories,
-                FilePath = uniqueFileName,         
+                FilePath = mp4FilePath,         
                 ThumbnailPath = "thumb/" + thumbnailFileName  + ".png"
             };
 
