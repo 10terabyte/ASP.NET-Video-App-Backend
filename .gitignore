@@ -1,0 +1,70 @@
+# ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Uu]ploads/
+[Tt]humbnails/
+videos.db*
+
+# DotNet and Visual Studio
+.vscode/
+.vs/
+*.dbmdl
+*.jfm
+*.ide
+.idea/
+.DS_Store
+
+# Logs
+logs/
+*.log
+**/*.log
+
+# Package directories
+node_modules/
+wwwroot/lib/
+
+# Publish output
+publish/
+out/
+
+# Temporary files
+.tmp
+*.tmp
+*.temp
+*.pid
+
+# ASP.NET Core secret settings
+secrets.json
+
+# Configuration files
+appsettings.*.json
+
+# Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.rsuser
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Local history for Visual Studio
+.history/
+
+# Resharper
+_ReSharper*/
+
+# Coverage and test result
+coverage/
+TestResults/
+*.coverage
+
+# JetBrains Rider & Resharper
+.idea/
+*.sln.dotSettings.user
