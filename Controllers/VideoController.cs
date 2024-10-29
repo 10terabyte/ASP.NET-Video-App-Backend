@@ -24,7 +24,8 @@ namespace VideoAppBackend.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadVideo([FromForm] string title, [FromForm] string description, [FromForm] List<string> categories, [FromForm] IFormFile file)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadVideo([FromForm] string title, [FromForm] string description, [FromForm] List<string> categories, IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest(new { message = "No file uploaded" });
