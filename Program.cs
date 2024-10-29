@@ -1,3 +1,9 @@
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+using VideoAppBackend;
+using VideoAppBackend.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +18,13 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     });
 });
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600;
+});
+builder.Services.AddDbContext<DataContext>(options =>
+    options.UseSqlite("Data Source=videos.db"));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,5 +38,5 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
-
+app.UseStaticFiles();
 app.Run();
