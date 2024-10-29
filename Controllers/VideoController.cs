@@ -84,6 +84,49 @@ namespace VideoAppBackend.Controllers
             return Ok(new { message = "Video uploaded successfully", videoId = video.Id });
         }
 
+        [HttpGet("stream/{videoId}")]
+        public async Task<IActionResult> StreamVideo(int videoId)
+        {
+            var video = await _context.Videos.FindAsync(videoId);
+
+            if (video == null)
+                return NotFound(new { message = "Video not found" });
+
+            var videoPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", video.FilePath);
+
+            if (!System.IO.File.Exists(videoPath))
+                return NotFound(new { message = "Video file not found" });
+
+            var fileStream = new FileStream(videoPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var fileLength = fileStream.Length;
+
+            Response.Headers.Append("Accept-Ranges", "bytes");
+
+            if (Request.Headers.ContainsKey("Range"))
+            {
+                var rangeHeader = Request.Headers["Range"].ToString();
+                var range = rangeHeader.Replace("bytes=", "").Split('-');
+                var start = long.Parse(range[0]);
+                var end = range.Length > 1 && !string.IsNullOrEmpty(range[1])
+                    ? long.Parse(range[1])
+                    : fileLength - 1;
+
+                if (start >= fileLength || end >= fileLength || start > end)
+                    return BadRequest(new { message = "Invalid range" });
+
+                fileStream.Seek(start, SeekOrigin.Begin);
+
+                Response.StatusCode = 206;
+                Response.Headers.Append("Content-Range", $"bytes {start}-{end}/{fileLength}");
+                var length = end - start + 1;
+
+                return File(fileStream, "video/mp4", enableRangeProcessing: true);
+            }
+            else
+            {
+                return File(fileStream, "video/mp4");
+            }
+        }
 
 
     }
