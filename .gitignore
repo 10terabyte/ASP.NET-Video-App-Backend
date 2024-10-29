@@ -5,7 +5,8 @@ obj/
 *.suo
 *.userosscache
 *.sln.docstates
-uploads/
+[Uu]ploads/
+[Tt]humbnails/
 videos.db*
 
 # DotNet and Visual Studio
